@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <node id='-127642' version='1' lat='-16.67767323533' lon='-49.24188720038' />
+  <node id='-127645' version='1' lat='-16.67766535768' lon='-49.24166171619' />
+  <node id='-127652' version='1' lat='-16.67722187124' lon='-49.24179298308' />
+  <node id='-127653' version='1' lat='-16.67722286866' lon='-49.24197809006' />
+  <node id='-127654' version='1' lat='-16.67723740522' lon='-49.24198462366' />
+  <node id='-127655' version='1' lat='-16.67735020019' lon='-49.24198451998' />
+  <node id='-127656' version='1' lat='-16.67747992598' lon='-49.24197977108' />
+  <node id='-127657' version='1' lat='-16.67756989815' lon='-49.2419798787' />
+  <node id='-127672' action='modify' lat='-16.67763941332' lon='-49.24197799148' />
+  <node id='-127673' action='modify' lat='-16.67767614699' lon='-49.24195311791' />
+  <node id='-127685' action='modify' lat='-16.67767143337' lon='-49.24179453892' />
+  <node id='-127716' action='modify' lat='-16.67765150902' lon='-49.24164166417' />
+  <node id='-127717' action='modify' lat='-16.67755985697' lon='-49.24164322412' />
+  <node id='-127718' action='modify' lat='-16.67740643931' lon='-49.24164998388' />
+  <node id='-127719' action='modify' lat='-16.67722413115' lon='-49.24165570369' />
+  <way id='-10006627' version='1'>
+    <nd ref='-127652' />
+    <nd ref='-127653' />
+    <tag k='highway' v='footway' />
+    <tag k='labels' v='Free Path' />
+  </way>
+  <way id='-10006628' version='1'>
+    <nd ref='-127653' />
+    <nd ref='-127654' />
+    <tag k='highway' v='footway' />
+    <tag k='labels' v='Free Path' />
+  </way>
+  <way id='-10006629' version='1'>
+    <nd ref='-127654' />
+    <nd ref='-127655' />
+    <tag k='highway' v='footway' />
+    <tag k='labels' v='Free Path' />
+  </way>
+  <way id='-10006630' version='1'>
+    <nd ref='-127655' />
+    <nd ref='-127656' />
+    <tag k='highway' v='footway' />
+    <tag k='labels' v='Free Path' />
+  </way>
+  <way id='-10006631' action='modify' version='1'>
+    <nd ref='-127656' />
+    <nd ref='-127657' />
+    <nd ref='-127672' />
+    <nd ref='-127673' />
+    <nd ref='-127642' />
+    <nd ref='-127685' />
+    <nd ref='-127645' />
+    <nd ref='-127716' />
+    <nd ref='-127717' />
+    <nd ref='-127718' />
+    <nd ref='-127719' />
+    <nd ref='-127652' />
+    <tag k='highway' v='footway' />
+    <tag k='labels' v='Free Path' />
+  </way>
+</osm>
