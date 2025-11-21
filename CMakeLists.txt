@@ -14,10 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
         pluginlib
         navfn
         tf
+        synkar_navsat
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(TinyXML REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -112,9 +114,9 @@ add_service_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES osm_planner
-  CATKIN_DEPENDS roscpp message_runtime
-  DEPENDS system_lib TinyXML
+  LIBRARIES osm_planner 
+  CATKIN_DEPENDS roscpp message_runtime synkar_navsat
+  DEPENDS system_lib TinyXML 
 )
 
 ###########
@@ -130,9 +132,11 @@ add_library(osm_parser
         src/coordinates_converters/haversine_formula.cpp
         src/coordinates_converters/wgs_84_elipsoid.cpp
         )
+
 target_link_libraries(osm_parser
         ${catkin_LIBRARIES}
 	${TinyXML_LIBRARIES}
+        yaml-cpp
         )
 add_dependencies(osm_parser ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
@@ -150,6 +154,7 @@ add_library(osm_planner
 target_link_libraries(osm_planner
         ${catkin_LIBRARIES}
 	${TinyXML_LIBRARIES}
+        yaml-cpp
         )
 
 add_dependencies(osm_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${TinyXML_LIBRARIES})

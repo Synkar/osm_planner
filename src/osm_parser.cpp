@@ -4,24 +4,20 @@
 
 
 #include <osm_planner/osm_parser.h>
-#include <osm_planner/coordinates_converters/haversine_formula.h>
-
 #include <osm_planner/coordinates_converters/wgs_84_elipsoid.h>
-
 namespace osm_planner {
 
 
     Parser::Parser() {
 
       initialize();
-      coordinatesConverter = std::make_shared<coordinates_converters::HaversineFormula>();
+      coordinatesConverter = std::make_shared<coordinates_converters::WGS84Elipsoid>();
     }
 
     Parser::Parser(std::string file) : xml(file) {
 
         initialize();
-        coordinatesConverter = std::make_shared<coordinates_converters::HaversineFormula>();
-
+        coordinatesConverter = std::make_shared<coordinates_converters::WGS84Elipsoid>();
     }
 
    void Parser::initialize(){

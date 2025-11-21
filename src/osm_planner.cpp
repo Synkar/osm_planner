@@ -71,11 +71,12 @@ namespace osm_planner {
 
             //Debug param
             int set_origin_pose;
-            double origin_lat, origin_lon;
+            double origin_lat, origin_lon,origin_bearing,origin_altitude;
             n.param<int>("set_origin_pose", set_origin_pose, 0);
             n.param<double>("origin_latitude", origin_lat, 0);
             n.param<double>("origin_longitude",origin_lon, 0);
             n.param<double>("origin_bearing",origin_bearing, 0);
+            n.param<double>("origin_altitude",origin_altitude, 0);
             
             // Get params for map and parse
             //source of map
@@ -111,8 +112,7 @@ namespace osm_planner {
                     break;
                 case FROM_PARAM:
                     // Parse map and set origin
-                    map->setStartPoint(origin_lat, origin_lon,origin_bearing);
-                    //map->getCalculator()->setOrigin(origin_lat, origin_lon);
+                    map->getCalculator()->setOrigin(origin_lat, origin_lon);
                     break;
                 default:
                     ROS_ERROR("Bad value of param set_origin_pose");

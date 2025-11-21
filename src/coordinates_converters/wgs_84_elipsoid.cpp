@@ -8,9 +8,9 @@ namespace osm_planner {
 
     namespace coordinates_converters {
 
-        WGS84Elipsoid::WGS84Elipsoid() : CoordinatesConverterBase() {}
+        WGS84Elipsoid::WGS84Elipsoid() : CoordinatesConverterBase(),tf_listener_(tf_buffer_) {}
 
-        WGS84Elipsoid::WGS84Elipsoid(double bearing) : CoordinatesConverterBase(bearing) {}
+        WGS84Elipsoid::WGS84Elipsoid(double bearing) : CoordinatesConverterBase(bearing),tf_listener_(tf_buffer_) {}
 
         double WGS84Elipsoid::getDistance(double latitude1, double longitude1, double latitude2, double longitude2) {
 
@@ -23,7 +23,7 @@ namespace osm_planner {
 
             geometry_msgs::Point p1 = getGeoPoint(latitude1, longitude1);
             geometry_msgs::Point p2 = getGeoPoint(latitude2, longitude2);
-
+            
             return atan2( p1.y - p2.y, p1.x - p2.x);
         }
 
@@ -39,5 +39,37 @@ namespace osm_planner {
             return point;
         }
 
+
+        geometry_msgs::Point WGS84Elipsoid::convertLatLngToMapXY(double latitude, double longitude){
+            geometry_msgs::Point point;
+            synkar_msgs::GetNavSatGoal::Request req;
+            synkar_msgs::GetNavSatGoal::Response res;
+            req.latitude  = latitude;
+            req.longitude = longitude;
+            
+            if(!has_earth2map_) getEarth2Map();
+
+            navsat_conversion.convertLatLngToMapXY(req.latitude, req.longitude, res.x, res.y, earth_to_map);
+
+            point.x = res.x;
+            point.y = res.y;
+            point.z = 0.0;
+            return point;
+        }
+
+        void WGS84Elipsoid::getEarth2Map(){
+            try
+            {
+                 tf2::convert(tf_buffer_.lookupTransform("map", "earth", ros::Time(0)).transform, earth_to_map);
+                 ROS_DEBUG("Earth to map transform: translation (%f, %f, %f) rotation (%f, %f, %f, %f)", earth_to_map.getOrigin().getX(), earth_to_map.getOrigin().getY(), earth_to_map.getOrigin().getZ(), 
+                                        earth_to_map.getRotation().getX(), earth_to_map.getRotation().getY(), earth_to_map.getRotation().getZ(), earth_to_map.getRotation().getW());
+                                        has_earth2map_ = true;
+            }
+            catch (tf2::TransformException &ex)
+            {
+                 ROS_WARN( "Could not locate static transforms with exception ");
+                 has_earth2map_ = false;
+            }
+        }
     }
 }

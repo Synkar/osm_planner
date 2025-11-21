@@ -47,6 +47,8 @@
   <build_depend>nav_core</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>navfn</build_depend>
+  <build_depend>synkar_navsat</build_depend>
+  <build_depend>yaml-cpp</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>roscpp</run_depend>
@@ -54,6 +56,7 @@
   <run_depend>nav_core</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>navfn</run_depend>
+  <run_depend>synkar_navsat</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
