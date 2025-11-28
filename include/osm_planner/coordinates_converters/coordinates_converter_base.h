@@ -4,6 +4,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+#include <synkar_navsat/navsat_conversions.h>
 
 #ifndef PROJECT_COORDINATES_CONVERTER_BASE_H
 #define PROJECT_COORDINATES_CONVERTER_BASE_H
@@ -12,7 +13,7 @@ namespace osm_planner {
 
     namespace coordinates_converters {
 
-           typedef struct GeoNode {
+           struct GeoNode {
                 double latitude;
                 double longitude;
                 double altitude;
@@ -25,7 +26,7 @@ namespace osm_planner {
 
             CoordinatesConverterBase() : offset_(OFFSET) {}
 
-            CoordinatesConverterBase(double bearing) : offset_(bearing) {}
+            CoordinatesConverterBase(std::string map_frame, std::string earth_frame, GeoNode ltp_origin) : map_frame_(map_frame), earth_frame_(earth_frame), ltp_origin_(ltp_origin) {}
 
             virtual double getDistance(double latitude1, double longitude1, double latitude2, double longitude2) = 0;
 
@@ -146,6 +147,9 @@ namespace osm_planner {
         protected:
             GeoNode origin_;
             double offset_;
+            std::string map_frame_;
+            std::string earth_frame_;
+            GeoNode ltp_origin_;
 
         private:
 

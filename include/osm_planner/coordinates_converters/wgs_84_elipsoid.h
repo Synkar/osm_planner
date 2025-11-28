@@ -8,7 +8,7 @@
 #include <geometry_msgs/Point.h>
 #include "osm_planner/coordinates_converters/coordinates_converter_base.h"
 
-#include <synkar_navsat/navsat_conversions.h>
+#include <memory>
 #include <synkar_msgs/GetNavSatGoal.h>
 #include <synkar_msgs/SetGeodeticPoint.h>
 
@@ -30,7 +30,7 @@ namespace osm_planner {
         public:
             
             WGS84Elipsoid();
-            WGS84Elipsoid(double bearing);
+            WGS84Elipsoid(std::string map_frame, std::string earth_frame, GeoNode ltp_origin);
 
             double getDistance(double latitude1, double longitude1, double latitude2, double longitude2) override;
             double getBearing(double latitude1, double longitude1, double latitude2, double longitude2) override;
@@ -44,7 +44,7 @@ namespace osm_planner {
             constexpr static double f = (a - b)/a; //spolostenie elipsoidu Zeme
             constexpr static double e = 2*f - f*f; //prva excentricita
 
-            NavSatConversions navsat_conversion;
+            std::shared_ptr<synkar_navsat::NavSatConversions> navsat_conversions_;
             tf2_ros::Buffer tf_buffer_;
             tf2_ros::TransformListener tf_listener_;
             tf2::Transform earth_to_map;

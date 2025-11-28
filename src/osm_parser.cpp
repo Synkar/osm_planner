@@ -11,13 +11,11 @@ namespace osm_planner {
     Parser::Parser() {
 
       initialize();
-      coordinatesConverter = std::make_shared<coordinates_converters::WGS84Elipsoid>();
     }
 
     Parser::Parser(std::string file) : xml(file) {
 
         initialize();
-        coordinatesConverter = std::make_shared<coordinates_converters::WGS84Elipsoid>();
     }
 
    void Parser::initialize(){
@@ -25,7 +23,38 @@ namespace osm_planner {
         ros::NodeHandle n("~/Planner");
 
         //get the parameters
-        n.param<std::string>("global_frame", map_frame, "/world");
+        n.param<std::string>("global_frame", map_frame, "map");
+        n.param<std::string>("earth_frame", earth_frame, "earth");
+        
+        double ltp_origin_lat, ltp_origin_lng, ltp_origin_alt;
+        n.param<double>("ltp_origin_lat", ltp_origin_lat, 0);
+        n.param<double>("ltp_origin_lng", ltp_origin_lng, 0);
+        n.param<double>("ltp_origin_alt", ltp_origin_alt, 0);
+        std::string ltp_origin_file_path;
+        n.param<std::string>("ltp_origin_file_path", ltp_origin_file_path, "/data/maps/map.yaml");
+        std::ifstream infile(ltp_origin_file_path);
+        bool has_ltp_param=false;
+        if(infile.good()){
+            YAML::Node ltp_origin_config = YAML::LoadFile(ltp_origin_file_path);
+            try{
+                if(ltp_origin_config["ltp_frame_origin/lat"].IsDefined() && 
+                    ltp_origin_config["ltp_frame_origin/lng"].IsDefined() &&
+                    ltp_origin_config["ltp_frame_origin/alt"].IsDefined()){
+                    ltp_origin_lat = ltp_origin_config["ltp_frame_origin/lat"].as<double>();
+                    ltp_origin_lng = ltp_origin_config["ltp_frame_origin/lng"].as<double>();
+                    ltp_origin_alt = ltp_origin_config["ltp_frame_origin/alt"].as<double>();
+                    has_ltp_param = true;
+                }else{
+                    ROS_WARN("LTP origin configuration was not properly set");
+                }
+            }catch(YAML::ParserException ex){
+                ROS_WARN("LTP origin configuration was not properly set");
+            }catch(...){
+                ROS_WARN("LTP origin configuration was not properly set");
+            }
+        }
+        osm_planner::coordinates_converters::GeoNode ltp_origin = {ltp_origin_lat, ltp_origin_lng, ltp_origin_alt};
+        coordinatesConverter = std::make_shared<coordinates_converters::WGS84Elipsoid>(map_frame, earth_frame, ltp_origin);
 
        //Publishers for visualization
        position_marker_pub = n.advertise<visualization_msgs::Marker>("position_marker", 5);

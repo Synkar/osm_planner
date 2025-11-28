@@ -3,6 +3,7 @@
 //
 
 #include "osm_planner/coordinates_converters/wgs_84_elipsoid.h"
+#include <memory>
 
 namespace osm_planner {
 
@@ -10,7 +11,13 @@ namespace osm_planner {
 
         WGS84Elipsoid::WGS84Elipsoid() : CoordinatesConverterBase(),tf_listener_(tf_buffer_) {}
 
-        WGS84Elipsoid::WGS84Elipsoid(double bearing) : CoordinatesConverterBase(bearing),tf_listener_(tf_buffer_) {}
+        WGS84Elipsoid::WGS84Elipsoid(std::string map_frame, std::string earth_frame, GeoNode ltp_origin) : CoordinatesConverterBase(map_frame, earth_frame, ltp_origin),tf_listener_(tf_buffer_) {
+            navsat_conversions_ = std::make_shared<synkar_navsat::NavSatConversions>(
+                map_frame,
+                earth_frame,
+                synkar_navsat::WGS84Utils::geodetic{ltp_origin.latitude, ltp_origin.longitude, ltp_origin.altitude}
+            );
+        }
 
         double WGS84Elipsoid::getDistance(double latitude1, double longitude1, double latitude2, double longitude2) {
 
@@ -42,18 +49,13 @@ namespace osm_planner {
 
         geometry_msgs::Point WGS84Elipsoid::convertLatLngToMapXY(double latitude, double longitude){
             geometry_msgs::Point point;
-            synkar_msgs::GetNavSatGoal::Request req;
-            synkar_msgs::GetNavSatGoal::Response res;
-            req.latitude  = latitude;
-            req.longitude = longitude;
-            
-            if(!has_earth2map_) getEarth2Map();
+            double x, y;
+            navsat_conversions_->convertLatLngToMapXY(latitude, longitude, x, y);
+            ROS_DEBUG("Converted latitude %f, longitude %f to map XY %f, %f", latitude, longitude, x, y);
+            point.x = x;
+            point.y = y;
+            point.z = 0;
 
-            navsat_conversion.convertLatLngToMapXY(req.latitude, req.longitude, res.x, res.y, earth_to_map);
-
-            point.x = res.x;
-            point.y = res.y;
-            point.z = 0.0;
             return point;
         }
 
