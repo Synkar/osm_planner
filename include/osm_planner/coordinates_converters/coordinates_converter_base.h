@@ -3,7 +3,8 @@
 //
 
 #include <ros/ros.h>
-
+#include <geometry_msgs/Point.h>
+#include <synkar_navsat/navsat_conversions.h>
 
 #ifndef PROJECT_COORDINATES_CONVERTER_BASE_H
 #define PROJECT_COORDINATES_CONVERTER_BASE_H
@@ -12,7 +13,7 @@ namespace osm_planner {
 
     namespace coordinates_converters {
 
-           typedef struct GeoNode {
+           struct GeoNode {
                 double latitude;
                 double longitude;
                 double altitude;
@@ -25,11 +26,13 @@ namespace osm_planner {
 
             CoordinatesConverterBase() : offset_(OFFSET) {}
 
-            CoordinatesConverterBase(double bearing) : offset_(bearing) {}
+            CoordinatesConverterBase(std::string map_frame, std::string earth_frame, GeoNode ltp_origin) : map_frame_(map_frame), earth_frame_(earth_frame), ltp_origin_(ltp_origin) {}
 
             virtual double getDistance(double latitude1, double longitude1, double latitude2, double longitude2) = 0;
 
             virtual double getBearing(double latitude1, double longitude1, double latitude2, double longitude2) = 0;
+
+            virtual geometry_msgs::Point convertLatLngToMapXY(double latitude, double longitude) = 0;
 
             void setOrigin(double latitude, double longitude) {
                 origin_.latitude = latitude;
@@ -47,36 +50,45 @@ namespace osm_planner {
 
             template<class N1, class N2>
             double getDistance(N1 node1, N2 node2) {
-                return getDistance(node1.latitude, node1.longitude, node2.latitude, node2.longitude);
+                geometry_msgs::Point p1 = convertLatLngToMapXY(node1.latitude, node1.longitude);
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node2.latitude, node2.longitude);
+                return sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));; 
+
             };
 
             template<class N1, class N2>
             double getDistance(N1 node) {
-                return getDistance(origin_.latitude, origin_.longitude, node.latitude, node.longitude);
+                geometry_msgs::Point p1 = convertLatLngToMapXY(origin_.latitude, origin_.longitude);
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node.latitude, node.longitude);
+
+                 return sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
             };
 
             template<class N1, class N2>
             double getBearing(N1 node1, N2 node2) {
-                return getBearing(node1.latitude, node1.longitude, node2.latitude, node2.longitude);
+                geometry_msgs::Point p1 = convertLatLngToMapXY(node1.latitude, node1.longitude);
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node2.latitude, node2.longitude);
+                return atan2( p1.y - p2.y, p1.x - p2.x);
             };
 
             template<class N>
             double getBearing(N node) {
-                return getBearing(origin_.latitude, origin_.longitude, node.latitude, node.longitude);
+                geometry_msgs::Point p1 = convertLatLngToMapXY(origin_.latitude, origin_.longitude);
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node.latitude, node.longitude);
+                return atan2( p1.y - p2.y, p1.x - p2.x);
             };
 
             template<class N>
             std::vector<double> getCoordinates(N node) {
-                double dist = getDistance(origin_, node);
-                double bearing = getBearing(origin_, node);
-                return {sin(bearing + offset_) * dist, cos(bearing + offset_) * dist};
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node.latitude, node.longitude);
+                return {p2.x, p2.y};
             };
 
             template<class N1, class N2>
             std::vector<double> getCoordinates(N1 node1, N2 node2) {
-                double dist = getDistance(node1, node2);
-                double bearing = getBearing(node1, node2);
-                return {sin(bearing + offset_) * dist, cos(bearing + offset_) * dist};
+                geometry_msgs::Point p1 = convertLatLngToMapXY(node1.latitude, node1.longitude);
+                geometry_msgs::Point p2 = convertLatLngToMapXY(node2.latitude, node2.longitude);
+                return {p2.x, p2.y};
             };
 
             template<class N>
@@ -135,7 +147,9 @@ namespace osm_planner {
         protected:
             GeoNode origin_;
             double offset_;
-
+            std::string map_frame_;
+            std::string earth_frame_;
+            GeoNode ltp_origin_;
 
         private:
 

@@ -11,8 +11,9 @@
 
 //ros and tf
 #include <ros/ros.h>
+#include <fstream>
 #include <tf/transform_datatypes.h>
-
+#include <yaml-cpp/yaml.h>
 //messages
 #include <visualization_msgs/Marker.h>
 #include <nav_msgs/Path.h>
@@ -113,6 +114,7 @@ namespace osm_planner {
         visualization_msgs::Marker position_marker, target_marker;
 
         std::string map_frame; //name of frame for msgs
+        std::string earth_frame; //name of frame for msgs
 
         int size_of_nodes;  //usage in function getNodesInWay(), counter of currently read nodes
 

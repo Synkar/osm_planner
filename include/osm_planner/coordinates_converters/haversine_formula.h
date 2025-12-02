@@ -18,7 +18,7 @@ namespace osm_planner {
         public:
 
             HaversineFormula();
-            HaversineFormula(double bearing);
+            HaversineFormula(std::string map_frame, std::string earth_frame, GeoNode ltp_origin);
 
             double getDistance(double latitude1, double longitude1, double latitude2, double longitude2) override;
             double getBearing(double latitude1, double longitude1, double latitude2, double longitude2) override;

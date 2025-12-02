@@ -10,7 +10,7 @@ namespace osm_planner {
 
         HaversineFormula::HaversineFormula() : CoordinatesConverterBase() {}
 
-        HaversineFormula::HaversineFormula(double bearing) : CoordinatesConverterBase(bearing) {}
+        HaversineFormula::HaversineFormula(std::string map_frame, std::string earth_frame, GeoNode ltp_origin) : CoordinatesConverterBase(map_frame, earth_frame, ltp_origin) {}
 
         double HaversineFormula::getDistance(double latitude1, double longitude1, double latitude2, double longitude2) {
 
