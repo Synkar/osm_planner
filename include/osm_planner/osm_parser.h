@@ -18,6 +18,7 @@
 #include <visualization_msgs/Marker.h>
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <synkar_msgs/GeometryGraph.h>
 
 #include <osm_planner/coordinates_converters/coordinates_converter_base.h>
 
@@ -107,7 +108,6 @@ namespace osm_planner {
         //publishers
         ros::Publisher position_marker_pub;
         ros::Publisher target_marker_pub;
-        ros::Publisher path_pub;
         ros::Publisher refused_path_pub;
 
         //visualization msgs
@@ -125,6 +125,9 @@ namespace osm_planner {
         std::vector<TRANSLATE_TABLE> table;
         std::vector<std::vector<float> > networkArray;
 
+        synkar_msgs::GeometryGraph graph_;
+        ros::Publisher graph_pub_;
+        
        void initialize();
 
         void createMarkers();
