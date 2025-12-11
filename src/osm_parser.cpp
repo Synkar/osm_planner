@@ -60,8 +60,10 @@ namespace osm_planner {
        position_marker_pub = n.advertise<visualization_msgs::Marker>("position_marker", 5);
        target_marker_pub = n.advertise<visualization_msgs::Marker>("target_marker", 1);
 
-       path_pub = n.advertise<nav_msgs::Path>("route_network", 10);
+       //path_pub = n.advertise<nav_msgs::Path>("route_network", 10,true);
        refused_path_pub = n.advertise<nav_msgs::Path>("refused_path", 10);
+       graph_pub_  = n.advertise<synkar_msgs::GeometryGraph>("route_network", 10, true);
+      
 
        createMarkers();
     }
@@ -168,33 +170,84 @@ namespace osm_planner {
         publishPoint(point, marker_type, radius, orientation);
     }
 
-//publishing all paths
-    void Parser::publishRouteNetwork() {
-
-        nav_msgs::Path path;
-        path.header.frame_id = map_frame;
-
-        geometry_msgs::PoseStamped pose;
-        pose.pose.position.x = 0;
-        pose.pose.position.y = 0;
-        pose.pose.position.z = 0;
-
-        for (int i = 0; i < ways.size(); i++) {
-            path.poses.clear();
-
-            for (int j = 0; j < ways[i].nodesId.size(); j++) {
-
-                pose.pose.position.x = coordinatesConverter->getCoordinateX(nodes[ways[i].nodesId[j]]);
-                pose.pose.position.y = coordinatesConverter->getCoordinateY(nodes[ways[i].nodesId[j]]);
-                path.poses.push_back(pose);
-
+    void Parser::publishRouteNetwork()
+    {
+        synkar_msgs::GeometryGraph graph;  
+        graph.header.frame_id = map_frame;
+        graph.header.stamp    = ros::Time::now();
+    
+        // auxiliary vector to avoid duplication nodes. 
+        // Create a single node in the graph for each OSM node. Even if this isn't applied in multiple ways.
+        std::vector<int> node_to_graph_idx(nodes.size(), -1);
+        int next_graph_node_id = 0;
+    
+        // loop to explore all the ways
+        for (int i = 0; i < ways.size(); ++i)
+        {
+            const OSM_WAY& way = ways[i]; // get the current way
+            
+            //If a way has fewer than 2 nodes, it cannot form an edge.
+            if (way.nodesId.size() < 2)
+                continue;
+    
+            int prev_graph_idx = -1; // keep the last node of the current way
+    
+            // loop to create the nodes and edges
+            for (int j = 0; j < way.nodesId.size(); ++j)
+            {
+                int node_idx = way.nodesId[j];  // node index
+    
+                if (node_idx < 0 || node_idx >= nodes.size())
+                {
+                    ROS_WARN_STREAM("OSM planner: invalid node index "<< node_idx << " in way " << i);
+                    continue;
+                }
+    
+                // Create new node, if it exist just use it.
+                int graph_idx = node_to_graph_idx[node_idx];
+                if (graph_idx == -1)
+                {    
+                    geometry_msgs::Point map_point;
+                    map_point.x = coordinatesConverter->getCoordinateX(nodes[node_idx]);
+                    map_point.y = coordinatesConverter->getCoordinateY(nodes[node_idx]);
+                    map_point.z = 0.0;
+    
+                    synkar_msgs::Node new_node;
+                    new_node.id    = next_graph_node_id;
+                    new_node.point = map_point;
+    
+                    graph.nodes.push_back(new_node);
+    
+                    graph_idx = next_graph_node_id;
+                    node_to_graph_idx[node_idx] = graph_idx;
+                    next_graph_node_id++;
+                }
+    
+                // Create edges
+                if (prev_graph_idx != -1)
+                {
+                    synkar_msgs::Edge new_edge;
+                    new_edge.source_id = prev_graph_idx;
+                    new_edge.target_id = graph_idx;
+                    new_edge.level     = new_edge.HIGH;
+    
+                    const auto& p1 = graph.nodes[prev_graph_idx].point;
+                    const auto& p2 = graph.nodes[graph_idx].point;
+    
+                    double dx = p1.x - p2.x;
+                    double dy = p1.y - p2.y;
+                    new_edge.weight = std::sqrt(dx*dx + dy*dy);
+    
+                    graph.edges.push_back(new_edge);
+                }
+                
+                //update last node
+                prev_graph_idx = graph_idx; 
             }
-
-            usleep(90000);
-
-            path.header.stamp = ros::Time::now();
-            path_pub.publish(path);
         }
+    
+        graph_pub_.publish(graph);
+        ROS_INFO("Publishing Graph...");
     }
 
 //publishing defined path
