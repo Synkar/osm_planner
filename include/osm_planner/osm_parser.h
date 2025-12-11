@@ -125,7 +125,6 @@ namespace osm_planner {
         std::vector<TRANSLATE_TABLE> table;
         std::vector<std::vector<float> > networkArray;
 
-        synkar_msgs::GeometryGraph graph_;
         ros::Publisher graph_pub_;
         
        void initialize();

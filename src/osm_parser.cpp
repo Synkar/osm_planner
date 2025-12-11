@@ -172,11 +172,9 @@ namespace osm_planner {
 
     void Parser::publishRouteNetwork()
     {
-
-        graph_.nodes.clear();
-        graph_.edges.clear();    
-        graph_.header.frame_id = map_frame;
-        graph_.header.stamp    = ros::Time::now();
+        synkar_msgs::GeometryGraph graph;  
+        graph.header.frame_id = map_frame;
+        graph.header.stamp    = ros::Time::now();
     
         // auxiliary vector to avoid duplication nodes. 
         // Create a single node in the graph for each OSM node. Even if this isn't applied in multiple ways.
@@ -218,7 +216,7 @@ namespace osm_planner {
                     new_node.id    = next_graph_node_id;
                     new_node.point = map_point;
     
-                    graph_.nodes.push_back(new_node);
+                    graph.nodes.push_back(new_node);
     
                     graph_idx = next_graph_node_id;
                     node_to_graph_idx[node_idx] = graph_idx;
@@ -233,14 +231,14 @@ namespace osm_planner {
                     new_edge.target_id = graph_idx;
                     new_edge.level     = new_edge.HIGH;
     
-                    const auto& p1 = graph_.nodes[prev_graph_idx].point;
-                    const auto& p2 = graph_.nodes[graph_idx].point;
+                    const auto& p1 = graph.nodes[prev_graph_idx].point;
+                    const auto& p2 = graph.nodes[graph_idx].point;
     
                     double dx = p1.x - p2.x;
                     double dy = p1.y - p2.y;
                     new_edge.weight = std::sqrt(dx*dx + dy*dy);
     
-                    graph_.edges.push_back(new_edge);
+                    graph.edges.push_back(new_edge);
                 }
                 
                 //update last node
@@ -248,7 +246,7 @@ namespace osm_planner {
             }
         }
     
-        graph_pub_.publish(graph_);
+        graph_pub_.publish(graph);
         ROS_INFO("Publishing Graph...");
     }
 
